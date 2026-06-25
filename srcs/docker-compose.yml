@@ -1,0 +1,76 @@
+name: inception
+
+services:
+  nginx:
+    image: nginx_inception
+    container_name: nginx
+    build: ./requirements/nginx
+    restart: unless-stopped
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress_data:/var/www/html
+    env_file:
+      - .env
+    depends_on:
+      - wordpress
+    networks:
+      - docker-network
+
+  wordpress:
+    image: wordpress_inception
+    container_name: wordpress
+    build: ./requirements/wordpress
+    restart: unless-stopped
+    volumes:
+      - wordpress_data:/var/www/html
+    env_file:
+      - .env
+    secrets:
+      - credentials
+    depends_on:
+      - mariadb
+    networks:
+      - docker-network
+
+  mariadb:
+    image: mariadb_inception
+    container_name: mariadb
+    build: ./requirements/mariadb
+    restart: unless-stopped
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    env_file:
+      - .env
+    secrets:
+      - db_password
+      - db_root_password
+    networks:
+      - docker-network
+
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: home/aielo/data/mariadb
+
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: home/aielo/data/wordpress
+
+networks:
+  docker-network:
+    driver: bridge
+
+secrets:
+  db_password:
+    file: ../secrets/db_password.txt
+  db_root_password:
+    file: ../secrets/db_root_password.txt
+  credentials:
+    file: ../secrets/credentials.txt

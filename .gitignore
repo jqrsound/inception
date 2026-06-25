@@ -1,0 +1,24 @@
+# Environment variable files
+.env
+srcs/.env
+
+# Local secrets directory
+secrets/
+../secrets/
+srcs/secrets/
+
+# Local persistent data directories
+data/
+**/data/
+/home/*/data/
+
+# Docker & System Files
+.dockerignore
+.DS_Store
+Thumbs.db
+
+# WordPress Cache & Temporary Uploads
+wp-config.php
+**/wp-content/uploads/
+**/wp-content/cache/
+**/wp-content/backups/
