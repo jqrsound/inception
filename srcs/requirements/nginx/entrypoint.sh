@@ -23,5 +23,5 @@ if [ -f /etc/nginx/nginx.conf ]; then
     echo "server_name configured to match ${DOMAIN_NAME} in nginx.conf"
 fi
 
-echo "Container running ✅"
+echo "Container running"
 exec nginx -g 'daemon off;'

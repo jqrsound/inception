@@ -8,8 +8,10 @@ services:
     restart: unless-stopped
     ports:
       - "443:443"
+      - "4000:4000"
     volumes:
       - wordpress_data:/var/www/html
+      - website_data:/var/www/static
     env_file:
       - .env
     depends_on:
@@ -27,6 +29,7 @@ services:
     env_file:
       - .env
     secrets:
+      - db_password
       - credentials
     depends_on:
       - mariadb
@@ -38,6 +41,8 @@ services:
     container_name: mariadb
     build: ./requirements/mariadb
     restart: unless-stopped
+    expose:
+      - "3306"
     volumes:
       - mariadb_data:/var/lib/mysql
     env_file:
@@ -48,24 +53,85 @@ services:
     networks:
       - docker-network
 
+  adminer:
+    image: adminer_inception
+    container_name: adminer
+    build: ./requirements/adminer
+    restart: unless-stopped
+    environment:
+    - ADMINER_DESIGN=galkaev
+    env_file:
+      - .env
+    networks:
+      - docker-network
+
+  static-site:
+    image: alpine:3.23
+    container_name: static_site
+    networks:
+      - docker-network
+    depends_on:
+      - mariadb
+    volumes:
+      - ./requirements/static_site/html:/src
+      - website_data:/var/www/static
+    command: sh -c "sleep 2 && cp -r /src/* /var/www/static/"
+
+  redis:
+    image: redis_inception
+    container_name: redis
+    build: ./requirements/redis
+    restart: unless-stopped
+    networks:
+      - docker-network
+
+  uptime-kuma:
+    image: uptime_kuma_inception
+    container_name: uptime_kuma
+    build: ./requirements/uptime_kuma
+    restart: unless-stopped
+    volumes:
+      - kuma_data:/app/data
+    secrets:
+      - kuma_password
+    networks:
+      - docker-network
+
+
 volumes:
   mariadb_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: home/aielo/data/mariadb
+      device: ${USER_HOME}/data/mariadb
 
   wordpress_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: home/aielo/data/wordpress
+      device: ${USER_HOME}/data/wordpress
+
+  website_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${USER_HOME}/data/website
+
+  kuma_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${USER_HOME}/data/kuma
+
 
 networks:
   docker-network:
     driver: bridge
+
 
 secrets:
   db_password:
@@ -74,3 +140,5 @@ secrets:
     file: ../secrets/db_root_password.txt
   credentials:
     file: ../secrets/credentials.txt
+  kuma_password:
+    file: ../secrets/kuma_password.txt

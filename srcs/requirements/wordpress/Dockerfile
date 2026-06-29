@@ -16,6 +16,8 @@ RUN apk add --no-cache \
     wget \
     unzip
 
+RUN addgroup -S nginx && adduser -S nginx -G nginx
+
 RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
     && chmod +x wp-cli.phar \
     && mv wp-cli.phar /usr/local/bin/wp
@@ -26,7 +28,9 @@ RUN wget https://wordpress.org/wordpress-${WP_VERSION}.zip && \
     unzip wordpress-${WP_VERSION}.zip -d /tmp && \
     rm wordpress-${WP_VERSION}.zip
 
-RUN sed -i 's|listen = 127.0.0.1:9000|listen = 0.0.0.0:9000|' /etc/php84/php-fpm.d/www.conf
+RUN sed -i 's|listen = 127.0.0.1:9000|listen = 0.0.0.0:9000|' /etc/php84/php-fpm.d/www.conf && \
+    sed -i 's|user = .*|user = nginx|' /etc/php84/php-fpm.d/www.conf && \
+    sed -i 's|group = .*|group = nginx|' /etc/php84/php-fpm.d/www.conf
 
 COPY ./entrypoint.sh .
 RUN chmod +x entrypoint.sh

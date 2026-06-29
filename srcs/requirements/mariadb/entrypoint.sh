@@ -49,5 +49,5 @@ if [ ! -f "$MARKER_FILE" ]; then
     echo "Initialization completed"
 fi
 
-echo "Container running ✅"
+echo "Container running"
 exec mysqld_safe --datadir=/var/lib/mysql --bind-address=0.0.0.0 --user=mysql
