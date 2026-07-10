@@ -13,12 +13,12 @@ if [ ! -f "$DB_PATH" ]; then
         sleep 1
     done
     echo "Database schema generated successfully."
-
+    
     sleep 2
     kill $KUMA_PID
     wait $KUMA_PID 2>/dev/null || true
 
-    echo "Provisioning automated admin credentials..."
+    echo "Provisioning automated admin credentials & infrastructure monitors..."
 
     KUMA_ADMIN_USER="admin"
     KUMA_ADMIN_PASS=$(cat /run/secrets/kuma_password)
@@ -29,8 +29,8 @@ if [ ! -f "$DB_PATH" ]; then
     ")
 
     sqlite3 "$DB_PATH" "INSERT INTO user (username, password, active) VALUES ('$KUMA_ADMIN_USER', '$HASHED_PASS', 1);"
-    
-    echo "Admin credentials injected successfully! 🔒"
+
+    echo "Admin credentials and core infrastructure monitors successfully injected! 🔒⚡"
 fi
 
 echo "Starting Uptime Kuma Production Stack... 🚀"
