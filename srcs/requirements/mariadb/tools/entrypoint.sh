@@ -27,13 +27,13 @@ if [ ! -f "$MARKER_FILE" ]; then
         sleep 2
     done
 
-    mariadb -u root -e "CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`;"
-    mariadb -u root -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';"
-    mariadb -u root -e "GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'%';"
-
-    mariadb -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT_PASSWORD}';"
-
-    mariadb -u root -p"${DB_ROOT_PASSWORD}" -e "FLUSH PRIVILEGES;"
+    mariadb -u root <<EOF
+CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`;
+CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'%';
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT_PASSWORD}';
+FLUSH PRIVILEGES;
+EOF
 
     touch "$MARKER_FILE"
 
@@ -43,4 +43,4 @@ if [ ! -f "$MARKER_FILE" ]; then
 fi
 
 echo "Container running"
-exec mysqld_safe --datadir=/var/lib/mysql --bind-address=0.0.0.0 --user=mysql
+exec "$@"

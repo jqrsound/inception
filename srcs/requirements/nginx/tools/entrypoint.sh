@@ -20,4 +20,4 @@ if [ -f /etc/nginx/nginx.conf ]; then
 fi
 
 echo "Container running"
-exec nginx -g 'daemon off;'
+exec "$@"

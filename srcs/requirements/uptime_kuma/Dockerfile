@@ -1,4 +1,4 @@
-FROM alpine:3.23
+FROM alpine:3.23.5
 
 RUN apk add --no-cache nodejs npm git python3 make g++ sqlite
 
@@ -10,9 +10,10 @@ RUN git clone https://github.com/louislam/uptime-kuma.git . \
 RUN npm ci --production \
     && npm run download-dist
 
-COPY ./entrypoint.sh .
-RUN chmod +x entrypoint.sh
+COPY ./tools/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 3001
 
-CMD ["./entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["node", "server/server.js"]

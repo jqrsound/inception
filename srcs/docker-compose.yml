@@ -2,7 +2,7 @@ name: inception
 
 services:
   nginx:
-    image: nginx_inception
+    image: nginx:v1
     container_name: nginx
     build: ./requirements/nginx
     restart: unless-stopped
@@ -11,7 +11,7 @@ services:
       - "4000:4000"
     volumes:
       - wordpress_data:/var/www/html
-      - website_data:/var/www/static
+      - ./requirements/nginx/static:/var/www/static:ro
     env_file:
       - .env
     depends_on:
@@ -20,24 +20,27 @@ services:
       - docker-network
 
   wordpress:
-    image: wordpress_inception
+    image: wordpress:v1
     container_name: wordpress
     build: ./requirements/wordpress
     restart: unless-stopped
+    expose:
+      - "9000"
     volumes:
       - wordpress_data:/var/www/html
     env_file:
       - .env
     secrets:
       - db_password
-      - credentials
+      - wp_admin_password
+      - wp_subs_password
     depends_on:
       - mariadb
     networks:
       - docker-network
 
   mariadb:
-    image: mariadb_inception
+    image: mariadb:v1
     container_name: mariadb
     build: ./requirements/mariadb
     restart: unless-stopped
@@ -54,31 +57,19 @@ services:
       - docker-network
 
   adminer:
-    image: adminer_inception
+    image: adminer:v1
     container_name: adminer
     build: ./requirements/adminer
     restart: unless-stopped
     environment:
-    - ADMINER_DESIGN=galkaev
+      - ADMINER_DESIGN=galkaev
     env_file:
       - .env
     networks:
       - docker-network
 
-  static-site:
-    image: alpine:3.23
-    container_name: static_site
-    networks:
-      - docker-network
-    depends_on:
-      - mariadb
-    volumes:
-      - ./requirements/static_site/html:/src
-      - website_data:/var/www/static
-    command: sh -c "sleep 2 && cp -r /src/* /var/www/static/"
-
   redis:
-    image: redis_inception
+    image: redis:v1
     container_name: redis
     build: ./requirements/redis
     restart: unless-stopped
@@ -86,7 +77,7 @@ services:
       - docker-network
 
   uptime-kuma:
-    image: uptime_kuma_inception
+    image: uptime_kuma:v1
     container_name: uptime_kuma
     build: ./requirements/uptime_kuma
     restart: unless-stopped
@@ -104,28 +95,21 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ${USER_HOME}/data/mariadb
+      device: /home/${USER}/data/mariadb
 
   wordpress_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ${USER_HOME}/data/wordpress
-
-  website_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${USER_HOME}/data/website
+      device: /home/${USER}/data/wordpress
 
   kuma_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ${USER_HOME}/data/kuma
+      device: /home/${USER}/data/kuma
 
 
 networks:
@@ -138,7 +122,9 @@ secrets:
     file: ../secrets/db_password.txt
   db_root_password:
     file: ../secrets/db_root_password.txt
-  credentials:
-    file: ../secrets/credentials.txt
+  wp_admin_password:
+    file: ../secrets/wp_admin_password.txt
+  wp_subs_password:
+    file: ../secrets/wp_subs_password.txt
   kuma_password:
     file: ../secrets/kuma_password.txt

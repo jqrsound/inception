@@ -34,4 +34,4 @@ if [ ! -f "$DB_PATH" ]; then
 fi
 
 echo "Starting Uptime Kuma Production Stack... 🚀"
-exec node server/server.js
+exec "$@"

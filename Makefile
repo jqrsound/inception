@@ -1,20 +1,17 @@
-USER      = ale
-DATA_PATH = /home/$(USER)/data
-FILE      = ./srcs/docker-compose.yml
+DATA_PATH  = /home/$(USER)/data
+FILE       = ./srcs/docker-compose.yml
 
 all: up
 
 up:
 	mkdir -p $(DATA_PATH)/mariadb
 	mkdir -p $(DATA_PATH)/wordpress
-	mkdir -p $(DATA_PATH)/website
 	mkdir -p $(DATA_PATH)/kuma
-	docker compose -f $(FILE) up 
+	docker compose -f $(FILE) up
 
 build:
 	mkdir -p $(DATA_PATH)/mariadb
 	mkdir -p $(DATA_PATH)/wordpress
-	mkdir -p $(DATA_PATH)/website
 	mkdir -p $(DATA_PATH)/kuma
 	docker compose -f $(FILE) build --no-cache
 
@@ -30,21 +27,25 @@ fclean: clean
 	docker system prune -a --volumes -f
 	@echo "Docker environment completely wiped clean!"
 
-re: fclean build
+re: fclean up
+
 
 ps:
 	docker compose -f $(FILE) ps
 
+logs:
+	docker compose -f $(FILE) logs
+
 exec_mariadb:
-	docker compose -f $(FILE) exec mariadb sh
+	docker compose -f $(FILE) exec -it mariadb sh
 
 exec_nginx:
-	docker compose -f $(FILE) exec nginx sh
+	docker compose -f $(FILE) exec -it nginx sh
 
 exec_wordpress:
-	docker compose -f $(FILE) exec wordpress sh
+	docker compose -f $(FILE) exec -it wordpress sh
 
 exec_redis:
 	docker compose -f $(FILE) exec -it redis redis-cli monitor
 
-.PHONY: all up build down clean fclean re ps exec_mariadb exec_nginx exec_wordpress
+.PHONY: all up build down clean fclean re ps logs exec_mariadb exec_nginx exec_wordpress exec_redis

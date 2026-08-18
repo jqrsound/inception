@@ -1,4 +1,4 @@
-FROM alpine:3.23
+FROM alpine:3.23.5
 
 ARG WP_VERSION=6.7
 
@@ -18,7 +18,8 @@ RUN apk add --no-cache \
 
 RUN addgroup -S nginx && adduser -S nginx -G nginx
 
-RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+RUN wget https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar \
+    && mv wp-cli-2.12.0.phar wp-cli.phar \
     && chmod +x wp-cli.phar \
     && mv wp-cli.phar /usr/local/bin/wp
 
@@ -32,9 +33,10 @@ RUN sed -i 's|listen = 127.0.0.1:9000|listen = 0.0.0.0:9000|' /etc/php84/php-fpm
     sed -i 's|user = .*|user = nginx|' /etc/php84/php-fpm.d/www.conf && \
     sed -i 's|group = .*|group = nginx|' /etc/php84/php-fpm.d/www.conf
 
-COPY ./entrypoint.sh .
-RUN chmod +x entrypoint.sh
+COPY ./tools/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 9000
 
-CMD ["./entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["php-fpm84", "-F"]

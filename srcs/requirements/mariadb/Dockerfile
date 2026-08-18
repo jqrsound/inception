@@ -1,4 +1,4 @@
-FROM alpine:3.23
+FROM alpine:3.23.5
 
 RUN apk add --no-cache \
 	mariadb \
@@ -9,9 +9,10 @@ RUN sed -i "s|skip-networking|# skip-networking|g" /etc/my.cnf.d/mariadb-server.
 
 RUN mkdir -p /var/run/mysqld && chown -R mysql:mysql /var/run/mysqld
 
-COPY ./entrypoint.sh .
-RUN chmod +x entrypoint.sh
+COPY ./tools/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 3306
 
-CMD ["./entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["mysqld", "--datadir=/var/lib/mysql", "--bind-address=0.0.0.0", "--user=mysql", "--port=3306"]
